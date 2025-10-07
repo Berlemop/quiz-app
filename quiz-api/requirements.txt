@@ -10,4 +10,5 @@ Jinja2==3.1.6
 MarkupSafe==3.0.2
 packaging==25.0
 pycodestyle==2.14.0
+PyJWT==2.5.0
 Werkzeug==3.1.3
