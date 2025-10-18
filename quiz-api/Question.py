@@ -126,6 +126,51 @@ class Question:
         finally:
             conn.close()
     
+    @staticmethod
+    def get_by_position(position: int):
+        """
+        Récupère une question depuis la BDD par sa position
+        """
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('''
+                SELECT id, title, text, image, position
+                FROM questions
+                WHERE position = ?
+            ''', (position,))
+            
+            row = cursor.fetchone()
+            
+            if not row:
+                return None
+            
+            cursor.execute('''
+                SELECT text, isCorrect
+                FROM answers
+                WHERE question_id = ?
+            ''', (row[0],))
+            
+            answers_rows = cursor.fetchall()
+            
+            question = Question(
+                title=row[1],
+                text=row[2],
+                image=row[3],
+                position=row[4],
+                possibleAnswers=[
+                    {'text': ans[0], 'isCorrect': bool(ans[1])}
+                    for ans in answers_rows
+                ]
+            )
+            question.id = row[0]
+            
+            return question
+            
+        finally:
+            conn.close()
+    
     
     @staticmethod
     def get_all():
@@ -163,3 +208,98 @@ class Question:
             
         finally:
             conn.close()
+    
+    @staticmethod
+    def delete_by_id(question_id: int):
+        """
+        Supprime une question et ses réponses associées
+        """
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute('DELETE FROM questions WHERE id = ?', (question_id,))
+            conn.commit()
+        finally:
+            conn.close()
+
+
+    @staticmethod
+    def delete_all():
+        """
+        Supprime toutes les questions et leurs réponses associées
+        """
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        
+        try:
+            # Les réponses sont supprimées automatiquement grâce à ON DELETE CASCADE
+            cursor.execute('DELETE FROM questions')
+            conn.commit()
+        finally:
+            conn.close()
+    
+    @staticmethod
+    def update_by_id(question_id: int, data: dict):
+        """
+        Met à jour une question et ses réponses
+        Gère les conflits de position
+        """
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.isolation_level = None
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("begin")
+            
+            # Vérifier si la nouvelle position est déjà utilisée par une autre question
+            new_position = data.get('position')
+            cursor.execute('''
+                SELECT id FROM questions 
+                WHERE position = ? AND id != ?
+            ''', (new_position, question_id))
+            
+            conflicting_question = cursor.fetchone()
+            
+            if conflicting_question:
+                # Déplacer temporairement la question en conflit vers une position très haute
+                cursor.execute('''
+                    UPDATE questions
+                    SET position = (SELECT MAX(position) + 1 FROM questions)
+                    WHERE id = ?
+                ''', (conflicting_question[0],))
+            
+            # Mettre à jour la question
+            cursor.execute('''
+                UPDATE questions
+                SET title = ?, text = ?, image = ?, position = ?
+                WHERE id = ?
+            ''', (
+                data.get('title'),
+                data.get('text'),
+                data.get('image', ''),
+                new_position,
+                question_id
+            ))
+            
+            # Supprimer les anciennes réponses
+            cursor.execute('DELETE FROM answers WHERE question_id = ?', (question_id,))
+            
+            # Ajouter les nouvelles réponses
+            if 'possibleAnswers' in data:
+                for answer in data['possibleAnswers']:
+                    cursor.execute('''
+                        INSERT INTO answers (question_id, text, isCorrect)
+                        VALUES (?, ?, ?)
+                    ''', (question_id, answer['text'], answer['isCorrect']))
+            
+            cursor.execute("commit")
+            
+        except Exception as e:
+            cursor.execute('rollback')
+            raise e
+        finally:
+            conn.close()
+
+
+
