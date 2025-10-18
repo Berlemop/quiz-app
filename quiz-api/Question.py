@@ -6,7 +6,7 @@ DATABASE_PATH = 'base_de_donnees.db'
 class Question:
     
     def __init__(self, title: str, text: str, position: int, image: str = "", possibleAnswers: list = None):
-        self.id = None  # L'ID sera défini après insertion en BDD
+        self.id = None
         self.title = title
         self.text = text
         self.image = image
@@ -48,7 +48,7 @@ class Question:
     def save(self):
         """
         Sauvegarde la question dans la BDD 
-        Génère une requête SQL INSERT à partir de l'objet Python
+        Gère automatiquement le réordonnancement des positions
         """
         conn = sqlite3.connect(DATABASE_PATH)
         conn.isolation_level = None  
@@ -56,6 +56,25 @@ class Question:
         
         try:
             cursor.execute("begin")
+            
+            cursor.execute('SELECT id FROM questions WHERE position = ?', (self.position,))
+            existing = cursor.fetchone()
+            
+            if existing:
+                cursor.execute('SELECT MAX(position) FROM questions')
+                max_pos = cursor.fetchone()[0]
+                
+                cursor.execute('''
+                    UPDATE questions
+                    SET position = position + ? + 1
+                    WHERE position >= ?
+                ''', (max_pos, self.position))
+                
+                cursor.execute('''
+                    UPDATE questions
+                    SET position = position - ?
+                    WHERE position > ?
+                ''', (max_pos, max_pos))
             
             cursor.execute('''
                 INSERT INTO questions (title, text, image, position)
@@ -83,8 +102,7 @@ class Question:
     @staticmethod
     def get_by_id(question_id: int):
         """
-        Récupère une question depuis la BDD par son ID (SELECT)
-        Génère un objet Python à partir du retour d'une requête SQL SELECT
+        Récupère une question depuis la BDD par son ID
         """
         conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
@@ -105,6 +123,7 @@ class Question:
                 SELECT text, isCorrect
                 FROM answers
                 WHERE question_id = ?
+                ORDER BY id
             ''', (question_id,))
             
             answers_rows = cursor.fetchall()
@@ -125,6 +144,7 @@ class Question:
             
         finally:
             conn.close()
+    
     
     @staticmethod
     def get_by_position(position: int):
@@ -150,6 +170,7 @@ class Question:
                 SELECT text, isCorrect
                 FROM answers
                 WHERE question_id = ?
+                ORDER BY id
             ''', (row[0],))
             
             answers_rows = cursor.fetchall()
@@ -188,7 +209,7 @@ class Question:
             for row in questions_rows:
                 question_id = row[0]
                 
-                cursor.execute('SELECT text, isCorrect FROM answers WHERE question_id = ?', (question_id,))
+                cursor.execute('SELECT text, isCorrect FROM answers WHERE question_id = ? ORDER BY id', (question_id,))
                 answers_rows = cursor.fetchall()
                 
                 question = Question(
@@ -209,21 +230,45 @@ class Question:
         finally:
             conn.close()
     
+    
     @staticmethod
     def delete_by_id(question_id: int):
         """
         Supprime une question et ses réponses associées
+        Décale automatiquement les questions suivantes
         """
         conn = sqlite3.connect(DATABASE_PATH)
+        conn.isolation_level = None
         cursor = conn.cursor()
         
         try:
-            cursor.execute('DELETE FROM questions WHERE id = ?', (question_id,))
-            conn.commit()
+            cursor.execute("begin")
+            
+            cursor.execute('SELECT position FROM questions WHERE id = ?', (question_id,))
+            result = cursor.fetchone()
+            
+            if result:
+                position = result[0]
+                
+                cursor.execute('DELETE FROM questions WHERE id = ?', (question_id,))
+                
+                cursor.execute('''
+                    UPDATE questions
+                    SET position = position - 1
+                    WHERE position > ?
+                ''', (position,))
+            else:
+                cursor.execute('DELETE FROM questions WHERE id = ?', (question_id,))
+            
+            cursor.execute("commit")
+            
+        except Exception as e:
+            cursor.execute('rollback')
+            raise e
         finally:
             conn.close()
-
-
+    
+    
     @staticmethod
     def delete_all():
         """
@@ -233,17 +278,17 @@ class Question:
         cursor = conn.cursor()
         
         try:
-            # Les réponses sont supprimées automatiquement grâce à ON DELETE CASCADE
             cursor.execute('DELETE FROM questions')
             conn.commit()
         finally:
             conn.close()
     
+    
     @staticmethod
-    def update_by_id(question_id: int, data: dict):
+    def delete_by_position(position: int):
         """
-        Met à jour une question et ses réponses
-        Gère les conflits de position
+        Supprime une question à une position donnée
+        et décale toutes les questions suivantes vers le haut
         """
         conn = sqlite3.connect(DATABASE_PATH)
         conn.isolation_level = None
@@ -252,41 +297,95 @@ class Question:
         try:
             cursor.execute("begin")
             
-            # Vérifier si la nouvelle position est déjà utilisée par une autre question
-            new_position = data.get('position')
-            cursor.execute('''
-                SELECT id FROM questions 
-                WHERE position = ? AND id != ?
-            ''', (new_position, question_id))
+            cursor.execute('SELECT id FROM questions WHERE position = ?', (position,))
+            result = cursor.fetchone()
             
-            conflicting_question = cursor.fetchone()
+            if not result:
+                raise Exception("Question not found at this position")
             
-            if conflicting_question:
-                # Déplacer temporairement la question en conflit vers une position très haute
-                cursor.execute('''
-                    UPDATE questions
-                    SET position = (SELECT MAX(position) + 1 FROM questions)
-                    WHERE id = ?
-                ''', (conflicting_question[0],))
+            question_id = result[0]
             
-            # Mettre à jour la question
+            cursor.execute('DELETE FROM questions WHERE id = ?', (question_id,))
+            
             cursor.execute('''
                 UPDATE questions
-                SET title = ?, text = ?, image = ?, position = ?
+                SET position = position - 1
+                WHERE position > ?
+            ''', (position,))
+            
+            cursor.execute("commit")
+            
+        except Exception as e:
+            cursor.execute('rollback')
+            raise e
+        finally:
+            conn.close()
+    
+    
+    @staticmethod
+    def update_by_id(question_id: int, data: dict):
+        """
+        Met à jour une question et gère le réordonnancement complet des positions
+        """
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.isolation_level = None
+        cursor = conn.cursor()
+        
+        try:
+            cursor.execute("begin")
+            
+            cursor.execute('''
+                SELECT title, text, image, position 
+                FROM questions 
                 WHERE id = ?
-            ''', (
-                data.get('title'),
-                data.get('text'),
-                data.get('image', ''),
-                new_position,
-                question_id
-            ))
+            ''', (question_id,))
+            result = cursor.fetchone()
             
-            # Supprimer les anciennes réponses
-            cursor.execute('DELETE FROM answers WHERE question_id = ?', (question_id,))
+            if not result:
+                raise Exception("Question not found")
             
-            # Ajouter les nouvelles réponses
+            current_title, current_text, current_image, old_position = result
+            
+            new_title = data.get('title', current_title)
+            new_text = data.get('text', current_text)
+            new_image = data.get('image', current_image)
+            new_position = data.get('position', old_position)
+            
+            if old_position != new_position:
+                cursor.execute('''
+                    UPDATE questions
+                    SET position = -1
+                    WHERE id = ?
+                ''', (question_id,))
+                
+                if new_position < old_position:
+                    cursor.execute('''
+                        UPDATE questions
+                        SET position = position + 1
+                        WHERE position >= ? AND position < ?
+                    ''', (new_position, old_position))
+                else:
+                    cursor.execute('''
+                        UPDATE questions
+                        SET position = position - 1
+                        WHERE position > ? AND position <= ?
+                    ''', (old_position, new_position))
+                
+                cursor.execute('''
+                    UPDATE questions
+                    SET position = ?
+                    WHERE id = ?
+                ''', (new_position, question_id))
+            
+            cursor.execute('''
+                UPDATE questions
+                SET title = ?, text = ?, image = ?
+                WHERE id = ?
+            ''', (new_title, new_text, new_image, question_id))
+            
             if 'possibleAnswers' in data:
+                cursor.execute('DELETE FROM answers WHERE question_id = ?', (question_id,))
+                
                 for answer in data['possibleAnswers']:
                     cursor.execute('''
                         INSERT INTO answers (question_id, text, isCorrect)
@@ -300,6 +399,3 @@ class Question:
             raise e
         finally:
             conn.close()
-
-
-

@@ -20,7 +20,7 @@ def rebuild_database():
                 title TEXT NOT NULL,
                 text TEXT NOT NULL,
                 image TEXT,
-                position INTEGER NOT NULL UNIQUE
+                position INTEGER NOT NULL 
             )
         ''')
         

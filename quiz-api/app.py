@@ -38,55 +38,89 @@ def login():
 	else:
 		return 'Unauthorized', 401 
 
-@app.route('/questions', methods=['POST', 'GET'])
+@app.route('/questions', methods=['GET', 'POST', 'DELETE'])
 def question():
-	if request.method == 'POST':
-		auth_header = request.headers.get('Authorization')
-		if not auth_header:
-			return 'Unauthorized', 401
+    if request.method == 'POST':
+        # POST : Ajouter une question
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return 'Unauthorized', 401
 
-		try:
-			token = auth_header.replace('Bearer ', '')
-			
-			jwt_utils.decode_token(token)
-			
-		except jwt_utils.JwtError:
-			return 'Unauthorized', 401
-		except Exception:
-			return 'Unauthorized', 401
-		
-		question_data = request.get_json()
-		
-		if not question_data:
-			return 'Bad Request', 400
-		
-		required_fields = ['title', 'text', 'position', 'possibleAnswers']
-		for field in required_fields:
-			if field not in question_data:
-				return jsonify({"error": f"Missing field: {field}"}), 400
-		
-		try:
-			question = Question.from_dict(question_data)
-			question_id = question.save()
-			return jsonify({"id": question_id}), 200
-			
-		except Exception as e:
-			return jsonify({"error": str(e)}), 500
-	else: #GET
-		position = request.args.get('position')
-		if position:
-			try:
-				position_int = int(position)
-				question = Question.get_by_position(position_int)
-				if question is None:
-					return jsonify({"error": "Question not found"}), 404
+        try:
+            token = auth_header.replace('Bearer ', '')
+            jwt_utils.decode_token(token)
+        except jwt_utils.JwtError:
+            return 'Unauthorized', 401
+        except Exception:
+            return 'Unauthorized', 401
+        
+        question_data = request.get_json()
+        
+        if not question_data:
+            return 'Bad Request', 400
+        
+        required_fields = ['title', 'text', 'position', 'possibleAnswers']
+        for field in required_fields:
+            if field not in question_data:
+                return jsonify({"error": f"Missing field: {field}"}), 400
+        
+        try:
+            question = Question.from_dict(question_data)
+            question_id = question.save()
+            return jsonify({"id": question_id}), 200
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    
+    elif request.method == 'DELETE':
+        # DELETE par position : DELETE /questions?position=X
+        auth_header = request.headers.get('Authorization')
+        if not auth_header:
+            return 'Unauthorized', 401
+
+        try:
+            token = auth_header.replace('Bearer ', '')
+            jwt_utils.decode_token(token)
+        except jwt_utils.JwtError:
+            return 'Unauthorized', 401
+        except Exception:
+            return 'Unauthorized', 401
+        
+        position = request.args.get('position')
+        if not position:
+            return jsonify({"error": "Position parameter required"}), 400
+        
+        try:
+            position_int = int(position)
+            question = Question.get_by_position(position_int)
+            
+            if question is None:
+                return jsonify({"error": "Question not found"}), 404
+            
+            # Supprimer la question et réordonner
+            Question.delete_by_position(position_int)
+            return '', 204
+            
+        except ValueError:
+            return jsonify({"error": "Invalid position"}), 400
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+    
+    else:
+        # GET : Récupérer les questions
+        position = request.args.get('position')
+        if position:
+            try:
+                position_int = int(position)
+                question = Question.get_by_position(position_int)
+                if question is None:
+                    return jsonify({"error": "Question not found"}), 404
                 
-				return jsonify(question.to_dict()), 200
-			except ValueError:
-			    return jsonify({"error": "Invalid position"}), 400
-		else:
-		    questions_list = Question.get_all()
-		    return jsonify([q.to_dict() for q in questions_list]), 200
+                return jsonify(question.to_dict()), 200
+            except ValueError:
+                return jsonify({"error": "Invalid position"}), 400
+        else:
+            questions_list = Question.get_all()
+            return jsonify([q.to_dict() for q in questions_list]), 200
 
 @app.route('/questions/all', methods=['DELETE'])
 def delete_all_questions():
