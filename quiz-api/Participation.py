@@ -39,12 +39,11 @@ class Participation:
             
             participations = []
             for row in participations_rows:
-                participation = {
-                    'id': row[0],
-                    'playerName': row[1],
-                    'score': row[2],
-                    'date': row[3]
-                }
+                participation = Participation(  # ✅ Créer un objet Participation
+                    playerName=row[1],
+                    score=row[2]
+                )
+                participation.id = row[0]  # Ajouter l'ID
                 participations.append(participation)
             
             return participations

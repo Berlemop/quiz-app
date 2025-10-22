@@ -4,6 +4,7 @@ import jwt
 import datetime
 import jwt_utils
 import db_setup
+import sqlite3
 from Question import Question
 from Participation import Participation 
 
@@ -248,6 +249,62 @@ def rebuild_db():
 	except Exception as e:
 		return jsonify({"error": str(e)}), 500
 
+@app.route('/participations', methods=['POST'])
+def participate():
+    participation_data = request.get_json()
+    
+    if not participation_data:
+        return 'Bad Request', 400
+    
+    required_fields = ['playerName', 'answers']
+    for field in required_fields:
+        if field not in participation_data:
+            return jsonify({"error": f"Missing field: {field}"}), 400
+    
+    playerName = participation_data.get('playerName')
+    answers = participation_data.get('answers')
+    
+    if not playerName or not isinstance(playerName, str) or playerName.strip() == '':
+        return jsonify({"error": "Invalid playerName"}), 400
+    
+    if not isinstance(answers, list):
+        return jsonify({"error": "answers must be a list"}), 400
+    
+    try:
+        
+        questions = Question.get_all()
+        
+        if len(answers) != len(questions):
+            return jsonify({"error": "Number of answers doesn't match number of questions"}), 400
+        
+       
+        score = 0
+        for i, answer in enumerate(answers):
+            question = questions[i]
+            if answer is not None and 0 <= answer < len(question.possibleAnswers):
+                if question.possibleAnswers[answer]['isCorrect']:
+                    score += 1
+        conn = sqlite3.connect('base_de_donnees.db')
+        cursor = conn.cursor()
+        
+        cursor.execute('''
+            INSERT INTO participations (playerName, score, date)
+            VALUES (?, ?, datetime('now'))
+        ''', (playerName, score))
+        
+        participation_id = cursor.lastrowid
+        conn.commit()
+        conn.close()
+        
+        return jsonify({
+            "id": participation_id,
+            "playerName": playerName,
+            "score": score
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/participations/all', methods=['DELETE'])
 def delete_all_participations():
     """
@@ -271,6 +328,20 @@ def delete_all_participations():
         return '', 204  
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/debug/questions', methods=['GET'])
+def debug_questions():
+    """Route de debug pour voir les bonnes réponses"""
+    questions = Question.get_all()
+    debug_info = []
+    for i, q in enumerate(questions):
+        correct_indices = [idx for idx, ans in enumerate(q.possibleAnswers) if ans['isCorrect']]
+        debug_info.append({
+            'position': q.position,
+            'title': q.title,
+            'correct_answer_indices': correct_indices
+        })
+    return jsonify(debug_info), 200
 
 
 if __name__ == "__main__":
