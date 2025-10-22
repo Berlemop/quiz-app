@@ -62,7 +62,6 @@ def login():
 @app.route('/questions', methods=['GET', 'POST', 'DELETE'])
 def question():
     if request.method == 'POST':
-        # POST : Ajouter une question
         auth_header = request.headers.get('Authorization')
         if not auth_header:
             return 'Unauthorized', 401
@@ -93,7 +92,6 @@ def question():
             return jsonify({"error": str(e)}), 500
     
     elif request.method == 'DELETE':
-        # DELETE par position : DELETE /questions?position=X
         auth_header = request.headers.get('Authorization')
         if not auth_header:
             return 'Unauthorized', 401
@@ -117,7 +115,6 @@ def question():
             if question is None:
                 return jsonify({"error": "Question not found"}), 404
             
-            # Supprimer la question et réordonner
             Question.delete_by_position(position_int)
             return '', 204
             
@@ -127,7 +124,7 @@ def question():
             return jsonify({"error": str(e)}), 500
     
     else:
-        # GET : Récupérer les questions
+        # GET 
         position = request.args.get('position')
         if position:
             try:
@@ -328,20 +325,6 @@ def delete_all_participations():
         return '', 204  
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-@app.route('/debug/questions', methods=['GET'])
-def debug_questions():
-    """Route de debug pour voir les bonnes réponses"""
-    questions = Question.get_all()
-    debug_info = []
-    for i, q in enumerate(questions):
-        correct_indices = [idx for idx, ans in enumerate(q.possibleAnswers) if ans['isCorrect']]
-        debug_info.append({
-            'position': q.position,
-            'title': q.title,
-            'correct_answer_indices': correct_indices
-        })
-    return jsonify(debug_info), 200
 
 
 if __name__ == "__main__":
