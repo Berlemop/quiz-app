@@ -20,7 +20,27 @@ def hello_world():
 
 @app.route('/quiz-info', methods=['GET'])
 def GetQuizInfo():
-	return {"size": 0, "scores": []}, 200
+    try:
+        questions = Question.get_all()
+        size = len(questions)
+        
+        participations = Participation.get_all()
+        
+        scores = [
+            {
+                "playerName": participation.playerName,
+                "score": participation.score
+            }
+            for participation in participations
+        ]
+        
+        return jsonify({
+            "size": size,
+            "scores": scores
+        }), 200
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/login', methods=['POST'])
 def login():
