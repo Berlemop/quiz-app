@@ -1,0 +1,617 @@
+﻿/* Thème Chess.com - Reproduction fidèle */
+:root {
+    --chess-green: #81b64c;
+    --chess-green-dark: #749a3e;
+    --chess-green-hover: #91c85f;
+    --chess-board-light: #ebecd0;
+    --chess-board-dark: #739552;
+    --chess-bg: #262421;
+    --chess-bg-light: #2f2d2a;
+    --chess-bg-lighter: #373432;
+    --chess-sidebar: #1c1917;
+    --chess-text: #ffffff;
+    --chess-text-secondary: #b0b0b0;
+    --chess-border: #3a3936;
+    --chess-shadow: rgba(0, 0, 0, 0.5);
+    --chess-blue: #26a7de;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--chess-bg);
+    color: var(--chess-text);
+    font-family: 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+}
+
+#app {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+/* Header pleine largeur Chess.com */
+header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--chess-sidebar);
+    border-bottom: 1px solid var(--chess-border);
+    box-shadow: 0 2px 8px var(--chess-shadow);
+}
+
+main {
+    min-height: calc(100vh - 60px);
+    padding: 0;
+    background: var(--chess-bg);
+    width: 100%;
+}
+
+/* Navigation Chess.com style */
+.navbar {
+    background: var(--chess-sidebar);
+    border: none;
+    padding: 0.5rem 1.5rem;
+    width: 100%;
+}
+
+    .navbar .container-fluid {
+        max-width: 100%;
+        padding: 0;
+    }
+
+.navbar-brand {
+    color: var(--chess-text);
+    font-weight: 700;
+    font-size: 1.5rem;
+    letter-spacing: -0.5px;
+    transition: all 0.2s ease;
+    padding: 0.5rem 0;
+}
+
+    .navbar-brand:hover {
+        color: var(--chess-green);
+    }
+
+.nav-link {
+    color: var(--chess-text-secondary);
+    font-weight: 500;
+    margin: 0 0.25rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+    .nav-link:hover {
+        color: var(--chess-text);
+        background: var(--chess-bg-lighter);
+    }
+
+.router-link-active.nav-link {
+    color: var(--chess-green);
+    background: var(--chess-bg-lighter);
+    font-weight: 600;
+}
+
+/* Container pleine largeur */
+.container {
+    background: var(--chess-bg-light);
+    border-radius: 8px;
+    padding: 2.5rem;
+    box-shadow: 0 2px 4px var(--chess-shadow);
+    margin: 2rem auto;
+    max-width: 1400px;
+    border: 1px solid var(--chess-border);
+}
+
+/* Alternative: container sans limite de largeur */
+.container-full {
+    background: var(--chess-bg-light);
+    padding: 2.5rem;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    margin: 0;
+}
+
+/* Typographie Chess.com */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--chess-text);
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    line-height: 1.3;
+}
+
+h1 {
+    font-size: 2rem;
+    color: var(--chess-text);
+}
+
+h2 {
+    font-size: 1.5rem;
+    color: var(--chess-text);
+}
+
+h3 {
+    font-size: 1.25rem;
+}
+
+p {
+    color: var(--chess-text-secondary);
+    margin-bottom: 1rem;
+    font-size: 0.95rem;
+}
+
+/* Boutons Chess.com authentiques */
+.btn {
+    padding: 0.625rem 1.25rem;
+    border-radius: 4px;
+    font-weight: 600;
+    border: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px var(--chess-shadow);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+.btn-primary {
+    background: var(--chess-green);
+    color: var(--chess-text);
+    font-weight: 700;
+}
+
+    .btn-primary:hover {
+        background: var(--chess-green-hover);
+    }
+
+.btn-secondary {
+    background: var(--chess-bg-lighter);
+    color: var(--chess-text);
+    border: 1px solid var(--chess-border);
+}
+
+    .btn-secondary:hover {
+        background: var(--chess-bg);
+    }
+
+.btn-success {
+    background: var(--chess-green);
+    color: var(--chess-text);
+    font-weight: 700;
+}
+
+    .btn-success:hover {
+        background: var(--chess-green-hover);
+    }
+
+.btn-warning {
+    background: #f0ad4e;
+    color: var(--chess-text);
+}
+
+    .btn-warning:hover {
+        background: #ec971f;
+    }
+
+.btn-danger {
+    background: #d9534f;
+    color: var(--chess-text);
+}
+
+    .btn-danger:hover {
+        background: #c9302c;
+    }
+
+.btn-lg {
+    padding: 0.875rem 1.75rem;
+    font-size: 1.1rem;
+    border-radius: 6px;
+}
+
+/* Cards Chess.com */
+.card {
+    background: var(--chess-bg-light);
+    border-radius: 8px;
+    border: 1px solid var(--chess-border);
+    box-shadow: 0 1px 3px var(--chess-shadow);
+    transition: all 0.2s ease;
+    overflow: hidden;
+}
+
+    .card:hover {
+        border-color: var(--chess-green);
+        box-shadow: 0 2px 8px var(--chess-shadow);
+    }
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--chess-text);
+}
+
+.card-text {
+    color: var(--chess-text-secondary);
+    font-size: 0.95rem;
+}
+
+/* Liste Chess.com */
+.list-group {
+    border-radius: 8px;
+    overflow: hidden;
+    background: transparent;
+}
+
+.list-group-item {
+    background: var(--chess-bg-light);
+    border: 1px solid var(--chess-border);
+    border-left: 3px solid transparent;
+    padding: 1rem 1.25rem;
+    color: var(--chess-text);
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.95rem;
+}
+
+    .list-group-item + .list-group-item {
+        border-top: none;
+    }
+
+    .list-group-item:hover {
+        background: var(--chess-bg-lighter);
+        border-left-color: var(--chess-green);
+        cursor: pointer;
+        padding-left: 1.5rem;
+    }
+
+    .list-group-item:first-child {
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .list-group-item:last-child {
+        border-bottom-left-radius: 8px;
+        border-bottom-right-radius: 8px;
+    }
+
+.list-group-item-action {
+    cursor: pointer;
+}
+
+/* Badges Chess.com */
+.badge {
+    padding: 0.35rem 0.75rem;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    border: none;
+}
+
+    .badge.bg-primary {
+        background: var(--chess-green);
+        color: var(--chess-text);
+    }
+
+    .badge.bg-success {
+        background: var(--chess-green);
+        color: var(--chess-text);
+    }
+
+.rounded-pill {
+    border-radius: 50rem;
+}
+
+/* Formulaires Chess.com */
+.form-control,
+.form-select,
+textarea {
+    background: var(--chess-bg);
+    border: 2px solid var(--chess-border);
+    border-radius: 4px;
+    padding: 0.625rem 0.875rem;
+    color: var(--chess-text);
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+    .form-control:focus,
+    .form-select:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--chess-green);
+        background: var(--chess-bg);
+        box-shadow: 0 0 0 3px rgba(129, 182, 76, 0.15);
+    }
+
+    .form-control::placeholder {
+        color: #5a5856;
+    }
+
+.form-label {
+    color: var(--chess-text-secondary);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+    font-size: 0.9rem;
+}
+
+.form-check-input {
+    width: 1.125rem;
+    height: 1.125rem;
+    border: 2px solid var(--chess-border);
+    border-radius: 3px;
+    cursor: pointer;
+    background: var(--chess-bg);
+    transition: all 0.2s ease;
+}
+
+    .form-check-input:checked {
+        background-color: var(--chess-green);
+        border-color: var(--chess-green);
+    }
+
+.input-group {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.input-group-text {
+    background: var(--chess-bg);
+    border: 2px solid var(--chess-border);
+    border-radius: 4px;
+    padding: 0.625rem 0.875rem;
+    color: var(--chess-text-secondary);
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+/* Alerts Chess.com */
+.alert {
+    padding: 1rem 1.25rem;
+    border-radius: 4px;
+    border: 1px solid;
+    margin-bottom: 1.5rem;
+    font-size: 0.95rem;
+}
+
+.alert-danger {
+    background: rgba(217, 83, 79, 0.1);
+    color: #ff6b6b;
+    border-color: rgba(217, 83, 79, 0.3);
+}
+
+.alert-info {
+    background: rgba(129, 182, 76, 0.1);
+    color: var(--chess-green-hover);
+    border-color: rgba(129, 182, 76, 0.3);
+}
+
+.alert-success {
+    background: rgba(129, 182, 76, 0.1);
+    color: var(--chess-green-hover);
+    border-color: rgba(129, 182, 76, 0.3);
+}
+
+/* Images */
+.img-fluid {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    border: 1px solid var(--chess-border);
+}
+
+/* Utilities */
+.text-center {
+    text-align: center;
+}
+
+.my-5 {
+    margin-top: 3rem;
+    margin-bottom: 3rem;
+}
+
+.mb-3 {
+    margin-bottom: 1rem;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.mt-3 {
+    margin-top: 1rem;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.me-2 {
+    margin-right: 0.5rem;
+}
+
+.ms-2 {
+    margin-left: 0.5rem;
+}
+
+.ms-auto {
+    margin-left: auto;
+}
+
+.d-flex {
+    display: flex;
+}
+
+.justify-content-between {
+    justify-content: space-between;
+}
+
+.align-items-center {
+    align-items: center;
+}
+
+.display-4 {
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--chess-text);
+}
+
+/* Scrollbar Chess.com authentique */
+::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--chess-sidebar);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--chess-bg-lighter);
+    border-radius: 7px;
+    border: 3px solid var(--chess-sidebar);
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--chess-border);
+    }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1.5rem;
+        margin: 1rem;
+        border-radius: 6px;
+    }
+
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .navbar {
+        padding: 0.5rem 1rem;
+    }
+
+    main {
+        padding: 0;
+    }
+}
+
+@media (min-width: 1024px) {
+    .navbar {
+        padding: 0.5rem 2rem;
+    }
+}
+
+@media (min-width: 1600px) {
+    .container {
+        max-width: 1600px;
+    }
+}
+
+/* Focus accessible */
+*:focus-visible {
+    outline: 2px solid var(--chess-green);
+    outline-offset: 2px;
+}
+
+/* Animations subtiles */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.container {
+    animation: fadeIn 0.3s ease-out;
+}
+
+/* Links */
+a {
+    color: var(--chess-green);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+    a:hover {
+        color: var(--chess-green-hover);
+    }
+
+/* Tables */
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+td, th {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid var(--chess-border);
+    text-align: left;
+    font-size: 0.95rem;
+}
+
+tr:hover {
+    background: var(--chess-bg-lighter);
+}
+
+th {
+    background: var(--chess-bg);
+    color: var(--chess-text-secondary);
+    font-weight: 700;
+}
+
+/* Bouton bleu Chess.com (pour "Remove Ads" style) */
+.btn-info {
+    background: var(--chess-blue);
+    color: var(--chess-text);
+    font-weight: 700;
+}
+
+    .btn-info:hover {
+        background: #2196d6;
+    }
