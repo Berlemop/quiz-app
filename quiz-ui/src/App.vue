@@ -7,9 +7,9 @@
     <nav class="navbar navbar-expand-lg navbar-dark">
       <div class="container-fluid">
         <RouterLink to="/" class="navbar-brand">Quiz App</RouterLink>
-        <div class="navbar-nav ms-auto">
+        <div class="navbar-nav">
           <RouterLink to="/" class="nav-link">Home</RouterLink>
-          <RouterLink to="/admin/login" class="nav-link">Administration</RouterLink>
+          <RouterLink to="/admin" class="nav-link">Administration</RouterLink>
         </div>
       </div>
     </nav>
@@ -19,4 +19,3 @@
     <RouterView />
   </main>
 </template>
-

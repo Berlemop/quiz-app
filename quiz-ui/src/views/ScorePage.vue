@@ -43,21 +43,21 @@ function goHome() {
   <div class="container">
     <h1>Résultat du Quiz</h1>
 
-    <div class="card mb-4">
-      <div class="card-body text-center">
+    <div class="card">
+      <div class="card-body">
         <h2 class="card-title">Félicitations {{ playerName }} !</h2>
-        <p class="card-text display-4">{{ score }} / {{ totalQuestions }}</p>
+        <p class="card-text">{{ score }} / {{ totalQuestions }}</p>
         <p class="card-text">Votre classement : {{ playerRank }}{{ playerRank === 1 ? 'er' : 'ème' }}</p>
       </div>
     </div>
 
     <h2>Meilleurs scores</h2>
-    <div class="list-group mb-4">
+    <div class="list-group">
       <div v-for="(scoreEntry, index) in allScores"
            :key="index"
-           class="list-group-item d-flex justify-content-between align-items-center">
+           class="list-group-item">
         <span>{{ index + 1 }}. {{ scoreEntry.playerName }}</span>
-        <span class="badge bg-primary rounded-pill">{{ scoreEntry.score }}</span>
+        <span class="badge">{{ scoreEntry.score }}</span>
       </div>
     </div>
 

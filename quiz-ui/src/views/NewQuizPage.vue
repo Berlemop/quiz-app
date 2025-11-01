@@ -21,7 +21,7 @@
   <div class="container">
     <h1>Nouveau Quiz</h1>
     <p>Nom du joueur</p>
-    <input type="text" v-model="username" class="form-control mb-3" />
+    <input type="text" v-model="username" class="form-control" />
     <button @click="launchNewQuiz" class="btn btn-primary">Démarrer</button>
   </div>
 </template>
